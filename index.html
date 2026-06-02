@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudentWall — Réseau de Classe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ─── CONNEXION ─── -->
+  <div class="login-overlay" id="loginOverlay">
+    <div class="login-card">
+      <div class="login-brand">
+        <span class="brand-icon">◈</span>
+        <h1 class="brand-name">StudentWall</h1>
+        <p class="brand-sub">Le mur de votre promotion</p>
+      </div>
+      <div class="login-form">
+        <label for="pseudoInput" class="field-label">Votre pseudo</label>
+        <input
+          type="text"
+          id="pseudoInput"
+          class="field-input"
+          placeholder="ex. Alice_M"
+          autocomplete="off"
+        />
+        <button class="btn-login" id="loginBtn" onclick="connecter()">
+          Entrer dans le mur
+          <span class="btn-arrow">→</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── APP ─── -->
+  <div class="app" id="app" style="display:none;">
+
+    <!-- HEADER -->
+    <header class="header">
+      <div class="header-inner">
+        <div class="header-brand">
+          <span class="brand-icon-sm">◈</span>
+          <span class="header-title">StudentWall</span>
+        </div>
+        <div class="header-user" id="headerUser">
+          <span class="user-dot"></span>
+          <span id="pseudoDisplay">—</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- CORPS -->
+    <main class="main-layout">
+
+      <!-- COLONNE GAUCHE -->
+      <aside class="sidebar">
+
+        <!-- STATS -->
+        <section class="widget stats-widget">
+          <h2 class="widget-title">Statistiques</h2>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <span class="stat-num" id="statMessages">0</span>
+              <span class="stat-label">messages</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-num" id="statLikes">0</span>
+              <span class="stat-label">j'aimes</span>
+            </div>
+          </div>
+          <div class="stat-top-user">
+            <span class="stat-top-label">✦ Top posteur</span>
+            <span class="stat-top-name" id="statTopUser">—</span>
+          </div>
+        </section>
+
+        <!-- PUBLIER -->
+        <section class="widget publish-widget">
+          <h2 class="widget-title">Publier</h2>
+          <textarea
+            id="messageInput"
+            class="message-textarea"
+            placeholder="Quoi de neuf dans la promo ?"
+            rows="4"
+          ></textarea>
+          <button class="btn-publish" onclick="publierMessage()">
+            <span>Publier</span>
+            <span class="btn-arrow">↑</span>
+          </button>
+        </section>
+
+        <!-- RECHERCHE -->
+        <section class="widget search-widget">
+          <h2 class="widget-title">Rechercher</h2>
+          <div class="search-bar">
+            <span class="search-icon">⌕</span>
+            <input
+              type="text"
+              id="searchInput"
+              class="search-input"
+              placeholder="Mot-clé…"
+              oninput="filtrerMessages()"
+            />
+          </div>
+        </section>
+
+      </aside>
+
+      <!-- COLONNE DROITE : MUR -->
+      <section class="wall-section">
+        <div class="wall-header">
+          <h2 class="wall-heading">Le Mur</h2>
+          <span class="wall-count" id="wallCount">0 messages</span>
+        </div>
+        <div class="messages-list" id="messagesList">
+          <div class="empty-state" id="emptyState">
+            <span class="empty-icon">◌</span>
+            <p>Le mur est encore vide.<br/>Soyez le premier à écrire !</p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
