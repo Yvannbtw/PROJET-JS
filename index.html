@@ -20,6 +20,7 @@
           <p class="brand-sub">Le mur de votre promotion</p>
         </div>
         <div class="login-form">
+          <span class="erreur-msg-c"></span>
           <label for="pseudoInput" class="field-label">Votre pseudo</label>
           <input
             type="text"
@@ -30,6 +31,36 @@
           />
           <button class="btn-login" id="loginBtn">
             Se connecter
+            <span class="btn-arrow">→</span>
+          </button>
+          <button class="btn-login" id="inscriptionBtn">
+            S'inscrire
+            <span class="btn-arrow">→</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── INSCRIPTION ─── -->
+    <div class="login-overlay" id="inscriptionOverlay" style="display: none">
+      <div class="login-card">
+        <div class="login-brand">
+          <span class="brand-icon">◈</span>
+          <h1 class="brand-name" n`>StudentWall</h1>
+          <p class="brand-sub">Le mur de votre promotion</p>
+        </div>
+        <div class="login-form">
+          <span class="erreur-msg-i"></span>
+          <label for="pseudoInput" class="field-label">Votre pseudo</label>
+          <input
+            type="text"
+            id="i-pseudoInput"
+            class="field-input"
+            placeholder="ex. Alice_M"
+            autocomplete="off"
+          />
+          <button class="btn-login" id="new-inscription-btn">
+            S'inscrire
             <span class="btn-arrow">→</span>
           </button>
         </div>
@@ -71,7 +102,7 @@
             </div>
             <div class="stat-top-user">
               <span class="stat-top-label">✦ Top posteur</span>
-              <span class="stat-top-name" id="statTopUser">—</span>
+              <span class="stat-top-name" id="topPosteur">—</span>
             </div>
           </section>
 

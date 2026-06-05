@@ -4,14 +4,29 @@ LOCAL STORAGE
 =====================================================
 */
 
-const userKey = "MSG_KEY";
+const msgKey = "MSG_KEY";
+const userKey = "USER_KEY";
+const likedKey = "LIKED_KEY";
+
 let messages = chargerMsg();
-const users = [];
+const users = chargerUser();
+let mesLikes = JSON.parse(localStorage.getItem(likedKey)) || [];
 
 function sauvegarderMsg() {
-  localStorage.setItem(userKey, JSON.stringify(messages));
+  localStorage.setItem(msgKey, JSON.stringify(messages));
 }
 function chargerMsg() {
+  const dataMsg = localStorage.getItem(msgKey);
+  if (dataMsg) {
+    return JSON.parse(dataMsg);
+  }
+  return [];
+}
+
+function sauvegarderUser() {
+  localStorage.setItem(userKey, JSON.stringify(users));
+}
+function chargerUser() {
   const dataUser = localStorage.getItem(userKey);
   if (dataUser) {
     return JSON.parse(dataUser);
@@ -24,6 +39,9 @@ function chargerMsg() {
 FONCTIONS UTILITAIRES
 =====================================================
 */
+const verificationUsers = (newPseudo) =>
+  users.some((u) => u.pseudonyme === newPseudo);
+
 function compteur() {
   const statCompter = (document.getElementById("statMessages").textContent =
     messages.length);
@@ -41,8 +59,27 @@ function formaterHeureMinute(date = new Date()) {
 function addLike(btnTriger) {
   const btnLikeId = parseInt(btnTriger.getAttribute("id").slice(4));
   const hasSameId = messages.filter((key) => key.id === btnLikeId);
-  hasSameId[0].likes === 0 ? hasSameId[0].likes++ : hasSameId[0].likes--;
+
+  if (hasSameId.length === 0) return;
+
+  const isAlreadyLiked = btnTriger.getAttribute("data-liked") === "true";
+
+  if (!isAlreadyLiked) {
+    hasSameId[0].likes++;
+    btnTriger.setAttribute("data-liked", "true");
+
+    if (!mesLikes.includes(btnLikeId)) mesLikes.push(btnLikeId);
+  } else {
+    hasSameId[0].likes--;
+    btnTriger.setAttribute("data-liked", "false");
+
+    mesLikes = mesLikes.filter((id) => id !== btnLikeId);
+  }
+
+  localStorage.setItem(likedKey, JSON.stringify(mesLikes));
+
   totalOfLikes();
+  sauvegarderMsg();
 }
 
 function totalOfLikes() {
@@ -54,20 +91,96 @@ function totalOfLikes() {
   totalLikes.textContent = total;
 }
 
+function afficherTopPosteur() {
+  const topPosteurEl = document.getElementById("topPosteur");
+  if (!topPosteurEl) return;
+
+  if (messages.length === 0) {
+    topPosteurEl.textContent = "Aucun";
+    return;
+  }
+
+  const compteurPseudos = {};
+
+  messages.forEach((msg) => {
+    compteurPseudos[msg.pseudo] = (compteurPseudos[msg.pseudo] || 0) + 1;
+  });
+
+  let maxMessages = 0;
+  let meilleurPseudo = "";
+
+  for (const pseudo in compteurPseudos) {
+    if (compteurPseudos[pseudo] > maxMessages) {
+      maxMessages = compteurPseudos[pseudo];
+      meilleurPseudo = pseudo;
+    }
+  }
+
+  topPosteurEl.textContent = `@${meilleurPseudo} (${maxMessages} msg)`;
+}
+
+function erreurMsg(span, msg) {
+  const msgError = document.querySelector(span);
+  msgError.textContent = msg;
+  setTimeout(() => {
+    msgError.textContent = "";
+  }, 2000);
+}
 /*
 =====================================================
 SCRIPT INSCRIPTION
 =====================================================
 */
+const btnInscription = document.getElementById("inscriptionBtn");
+
+btnInscription.addEventListener("click", () => {
+  const loginOverlay = document.getElementById("loginOverlay");
+  const inscriptionOverlay = document.getElementById("inscriptionOverlay");
+
+  loginOverlay.style.display = "none";
+  inscriptionOverlay.style.display = "flex";
+});
 
 /*
 ======Verification existance d'un pseudo====
 */
 
-const verificationUsers = (newPseudo) =>
-  users.some((u) => u.pseudonyme === newPseudo);
+function verificationInputInscription() {
+  const app = document.getElementById("app");
+  const userName = document.getElementById("pseudoDisplay");
+  const pageInscription = document.getElementById("inscriptionOverlay");
+  const pseudoInput = document.getElementById("i-pseudoInput").value.trim();
 
-function verificationInput() {
+  if (pseudoInput) {
+    if (verificationUsers(pseudoInput)) {
+      return erreurMsg(
+        ".erreur-msg-i",
+        `Le peudo ${pseudoInput} est déjà pris`,
+      );
+    } else {
+      users.push({ id: Date.now(), pseudonyme: pseudoInput });
+      app.style.display = "block";
+      pageInscription.style.display = "none";
+      userName.textContent = pseudoInput;
+      sauvegarderUser();
+      afficherMsg();
+    }
+  } else {
+    return erreurMsg(".erreur-msg-i", "Entrer votre pseudo");
+  }
+}
+
+document
+  .getElementById("new-inscription-btn")
+  .addEventListener("click", verificationInputInscription);
+
+/*
+=====================================================
+SCRIPT CONNEXION
+=====================================================
+*/
+
+function verificationInputConnexion() {
   const app = document.getElementById("app");
   const userName = document.getElementById("pseudoDisplay");
   const pageLogin = document.getElementById("loginOverlay");
@@ -75,27 +188,24 @@ function verificationInput() {
 
   if (pseudoInput) {
     if (verificationUsers(pseudoInput)) {
-      return console.log(`${pseudoInput} est deja pris`);
-    } else {
       app.style.display = "block";
       pageLogin.style.display = "none";
       userName.textContent = pseudoInput;
       afficherMsg();
+    } else {
+      return erreurMsg(
+        ".erreur-msg-c",
+        "Acces refuser, utilisateur inexistant",
+      );
     }
   } else {
-    return console.log("Acces refuser");
+    erreurMsg(".erreur-msg-c", "Veillez saisir votre pseudo");
   }
 }
 
 document
   .getElementById("loginBtn")
-  .addEventListener("click", verificationInput);
-
-/*
-=====================================================
-SCRIPT CONNEXION
-=====================================================
-*/
+  .addEventListener("click", verificationInputConnexion);
 
 /*
 =====================================================
@@ -111,6 +221,12 @@ document.getElementById("emptyState").addEventListener("click", (e) => {
   const btnLike = e.target.closest(".btn-like");
   if (btnLike) {
     addLike(btnLike);
+
+    if (btnLike.getAttribute("data-liked") === "true") {
+      btnLike.classList.add("liked");
+    } else {
+      btnLike.classList.remove("liked");
+    }
     return;
   }
 
@@ -144,30 +260,47 @@ function createMsg(username, msg) {
 
 function afficherMsg() {
   const msgOutput = document.getElementById("emptyState");
-  const msgInput = document.getElementById("messageInput").value.trim();
-  const pseudoInput = document.getElementById("pseudoInput").value.trim();
-
   msgOutput.innerHTML = "";
+
+  const utilisateurConnecte = document
+    .getElementById("pseudoDisplay")
+    .textContent.trim();
+
   messages.forEach((keys) => {
+    const dejaLike = mesLikes.includes(keys.id);
+    const dataLikedAttr = dejaLike ? "true" : "false";
+    const classLiked = dejaLike ? "liked" : "";
+
+    const estMonMessage = keys.pseudo === utilisateurConnecte;
+    const classeProprietaire = estMonMessage ? "mon-message" : "";
+
+    const boutonSupprimerHTML = estMonMessage
+      ? `<button id="btns-${keys.id}" class="btn-delete">❌</button>`
+      : "";
+
     const templateHTML = ` 
-    <div class="stat-top-user">
+    <div class="stat-top-user ${classeProprietaire}">
       <span class="stat-top-label">${keys.message}</span>
       <span class="stat-top-name">@${keys.pseudo}</span>
       <span class="stat-top-name">${formaterHeureMinute()}</span>
-      <button id="btn-${keys.id}" class="btn-like">❤️</button>
-      <button id="btns-${keys.id}" class="btn-delete">❌</button>
+      <button id="btn-${keys.id}" data-liked="${dataLikedAttr}" class="btn-like ${classLiked}">❤️</button>
+      ${boutonSupprimerHTML}
     </div>
     `;
     msgOutput.insertAdjacentHTML("beforeend", templateHTML);
   });
+  compteur();
+  totalOfLikes();
+  afficherTopPosteur();
 }
 
 const btnSubmitMessage = document.getElementById("btn-publish");
 btnSubmitMessage.addEventListener("click", () => {
   const msgInput = document.getElementById("messageInput").value.trim();
-  const pseudoInput = document.getElementById("pseudoInput").value.trim();
+  const userName = document.getElementById("pseudoDisplay");
+
   afficherMsg();
-  createMsg(pseudoInput, msgInput);
+  createMsg(userName.textContent, msgInput);
   afficherMsg();
 });
 
@@ -192,23 +325,37 @@ function supprimerMsg(btnDelete) {
 const searchInput = document.getElementById("searchInput");
 
 function afficherMsgFiltrer(table) {
+  const msgOutput = document.getElementById("emptyState");
+  msgOutput.innerHTML = "";
+
+  const utilisateurConnecte = document
+    .getElementById("pseudoDisplay")
+    .textContent.trim();
+
   table.forEach((keys) => {
-    const msgOutput = document.getElementById("emptyState");
-    msgOutput.innerHTML = "";
+    const dejaLike = mesLikes.includes(keys.id);
+    const dataLikedAttr = dejaLike ? "true" : "false";
+    const classLiked = dejaLike ? "liked" : "";
+
+    const estMonMessage = keys.pseudo === utilisateurConnecte;
+    const classeProprietaire = estMonMessage ? "mon-message" : "";
+
+    const boutonSupprimerHTML = estMonMessage
+      ? `<button id="btns-${keys.id}" class="btn-delete">❌</button>`
+      : "";
 
     const templateHTML = ` 
-    <div class="stat-top-user">
+    <div class="stat-top-user ${classeProprietaire}">
       <span class="stat-top-label">${keys.message}</span>
       <span class="stat-top-name">@${keys.pseudo}</span>
       <span class="stat-top-name">${formaterHeureMinute()}</span>
-      <button id="btn-${keys.id}" class="btn-like">❤️</button>
-      <button id="btns-${keys.id}" class="btn-delete">❌</button>
+      <button id="btn-${keys.id}" data-liked="${dataLikedAttr}" class="btn-like ${classLiked}">❤️</button>
+      ${boutonSupprimerHTML}
     </div>
     `;
     msgOutput.insertAdjacentHTML("beforeend", templateHTML);
   });
 }
-
 searchInput.addEventListener("input", (e) => {
   const msgOutput = document.getElementById("emptyState");
   const motCles = e.target.value.toLowerCase();
