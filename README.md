@@ -5,9 +5,9 @@ Bachelor Développement Web — 2026.
 
 ## Auteurs
 
-Ndong Owone Ndong Charles — 1re Année Bachelor Dev. Web(Chef)
+Ndong Owone Ndong Charles — 1re Année Bachelor Dev. Web
 
-Hoba Christ Yvan — 1re Année Bachelor Dev. Web 
+Hoba Christ Yvan — 1re Année Bachelor Dev. Web (Chef)
 
 Aié Marie Manuella— 1re Année Bachelor Dev. Web
 
@@ -27,4 +27,4 @@ Aié Marie Manuella— 1re Année Bachelor Dev. Web
 - JavaScript (ES2025)
 
 ## App en ligne
-https://#######################
+https://yvannbtw.github.io/PROJET-JS/
