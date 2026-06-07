@@ -217,7 +217,7 @@ SCRIPT MESSAGE
 ======DELEGATION VIA L'OUTPUT DES MESSAGES=======
 */
 
-document.getElementById("emptyState").addEventListener("click", (e) => {
+document.getElementById("messagesList").addEventListener("click", (e) => {
   const btnLike = e.target.closest(".btn-like");
   if (btnLike) {
     addLike(btnLike);
@@ -258,37 +258,63 @@ function createMsg(username, msg) {
   }
 }
 
+// Template HTML d'une carte message — utilisé par l'affichage normal ET le filtrage
+function creerCarteMessage(keys, utilisateurConnecte) {
+  const dejaLike = mesLikes.includes(keys.id);
+  const dataLikedAttr = dejaLike ? "true" : "false";
+  const classLiked = dejaLike ? "liked" : "";
+
+  const estMonMessage = keys.pseudo === utilisateurConnecte;
+  const classeProprietaire = estMonMessage ? "mon-message" : "";
+
+  const boutonSupprimerHTML = estMonMessage
+    ? `<button id="btns-${keys.id}" class="btn-delete">Supprimer</button>`
+    : "";
+
+  const initiale = keys.pseudo.charAt(0).toUpperCase();
+  const heure = formaterHeureMinute(new Date(keys.id));
+
+  return `
+    <article class="message-card ${classeProprietaire}">
+      <div class="card-header">
+        <div class="card-avatar">${initiale}</div>
+        <div class="card-meta">
+          <span class="card-pseudo">@${keys.pseudo}</span>
+          <span class="card-date">${heure}</span>
+        </div>
+      </div>
+      <p class="card-text">${keys.message}</p>
+      <div class="card-footer">
+        <button id="btn-${keys.id}" data-liked="${dataLikedAttr}" class="btn-like ${classLiked}">
+          <span class="like-heart">❤️</span>
+          <span>${keys.likes}</span>
+        </button>
+        ${boutonSupprimerHTML}
+      </div>
+    </article>
+  `;
+}
+
 function afficherMsg() {
-  const msgOutput = document.getElementById("emptyState");
-  msgOutput.innerHTML = "";
+  const messagesList = document.getElementById("messagesList");
 
   const utilisateurConnecte = document
     .getElementById("pseudoDisplay")
     .textContent.trim();
 
-  messages.forEach((keys) => {
-    const dejaLike = mesLikes.includes(keys.id);
-    const dataLikedAttr = dejaLike ? "true" : "false";
-    const classLiked = dejaLike ? "liked" : "";
-
-    const estMonMessage = keys.pseudo === utilisateurConnecte;
-    const classeProprietaire = estMonMessage ? "mon-message" : "";
-
-    const boutonSupprimerHTML = estMonMessage
-      ? `<button id="btns-${keys.id}" class="btn-delete">❌</button>`
-      : "";
-
-    const templateHTML = ` 
-    <div class="stat-top-user ${classeProprietaire}">
-      <span class="stat-top-label">${keys.message}</span>
-      <span class="stat-top-name">@${keys.pseudo}</span>
-      <span class="stat-top-name">${formaterHeureMinute()}</span>
-      <button id="btn-${keys.id}" data-liked="${dataLikedAttr}" class="btn-like ${classLiked}">❤️</button>
-      ${boutonSupprimerHTML}
-    </div>
+  if (messages.length === 0) {
+    messagesList.innerHTML = `
+      <div class="empty-state">
+        <span class="empty-icon">◌</span>
+        <p>Le mur est encore vide.<br />Soyez le premier à écrire !</p>
+      </div>
     `;
-    msgOutput.insertAdjacentHTML("beforeend", templateHTML);
-  });
+  } else {
+    messagesList.innerHTML = messages
+      .map((keys) => creerCarteMessage(keys, utilisateurConnecte))
+      .join("");
+  }
+
   compteur();
   totalOfLikes();
   afficherTopPosteur();
@@ -312,7 +338,7 @@ function supprimerMsg(btnDelete) {
   messages = messages.filter(
     (keys) => keys.id !== parseInt(btnDelete.getAttribute("id").slice(5)),
   );
-  btnDelete.closest(".stat-top-user").remove();
+  btnDelete.closest(".message-card").remove();
   sauvegarderMsg();
   afficherMsg();
   compteur();
@@ -325,39 +351,27 @@ function supprimerMsg(btnDelete) {
 const searchInput = document.getElementById("searchInput");
 
 function afficherMsgFiltrer(table) {
-  const msgOutput = document.getElementById("emptyState");
-  msgOutput.innerHTML = "";
+  const messagesList = document.getElementById("messagesList");
 
   const utilisateurConnecte = document
     .getElementById("pseudoDisplay")
     .textContent.trim();
 
-  table.forEach((keys) => {
-    const dejaLike = mesLikes.includes(keys.id);
-    const dataLikedAttr = dejaLike ? "true" : "false";
-    const classLiked = dejaLike ? "liked" : "";
-
-    const estMonMessage = keys.pseudo === utilisateurConnecte;
-    const classeProprietaire = estMonMessage ? "mon-message" : "";
-
-    const boutonSupprimerHTML = estMonMessage
-      ? `<button id="btns-${keys.id}" class="btn-delete">❌</button>`
-      : "";
-
-    const templateHTML = ` 
-    <div class="stat-top-user ${classeProprietaire}">
-      <span class="stat-top-label">${keys.message}</span>
-      <span class="stat-top-name">@${keys.pseudo}</span>
-      <span class="stat-top-name">${formaterHeureMinute()}</span>
-      <button id="btn-${keys.id}" data-liked="${dataLikedAttr}" class="btn-like ${classLiked}">❤️</button>
-      ${boutonSupprimerHTML}
-    </div>
+  if (table.length === 0) {
+    messagesList.innerHTML = `
+      <div class="empty-state">
+        <span class="empty-icon">◌</span>
+        <p>Aucun message ne correspond à votre recherche.</p>
+      </div>
     `;
-    msgOutput.insertAdjacentHTML("beforeend", templateHTML);
-  });
+    return;
+  }
+
+  messagesList.innerHTML = table
+    .map((keys) => creerCarteMessage(keys, utilisateurConnecte))
+    .join("");
 }
 searchInput.addEventListener("input", (e) => {
-  const msgOutput = document.getElementById("emptyState");
   const motCles = e.target.value.toLowerCase();
   const filtreMsg = messages.filter((props) => {
     return props.message.toLowerCase().includes(motCles);

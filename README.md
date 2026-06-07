@@ -5,9 +5,9 @@ Bachelor Développement Web — 2026.
 
 ## Auteurs
 
-Ndong Owone Ndong Charles — 1re Année Bachelor Dev. Web
+Ndong Owone Ndong Charles — 1re Année Bachelor Dev. Web(Chef)
 
-Hoba Christ Yvan — 1re Année Bachelor Dev. Web (Chef)
+Hoba Christ Yvan — 1re Année Bachelor Dev. Web 
 
 Aié Marie Manuella— 1re Année Bachelor Dev. Web
 
